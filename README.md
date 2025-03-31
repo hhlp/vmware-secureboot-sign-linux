@@ -7,8 +7,6 @@ This is a script to sign the vmware modules (vmmon.ko and vmnet.ko) for secure b
 gen-key.sh: This will generate a keys for signing the vmware modules (vmmon.ko and vmnet.ko).
 sign.sh: This will sign the vmware modules (vmmon.ko and vmnet.ko) and load into kernel.
 
-This will sign vmmon.ko and vmnet.ko files on the Linux kernel.
-
 NOTE: May not work on other distros.
 
 # How to run
