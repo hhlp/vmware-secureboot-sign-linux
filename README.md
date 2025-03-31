@@ -14,3 +14,7 @@ NOTE: May not work on other distros.
 First run `gen-key.sh` then reboot to approve the key into your system
 
 After rebooting, run `sign.sh`
+
+# Note
+
+for the current Kernel
