@@ -4,7 +4,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-openssl req -new -newkey rsa:2048 -keyout MOK.priv -outform DER -out MOK.der -nodes -x509 -days 36500 -subj "/CN=VMware Module Signing Key"
-mokutil --import MOK.der
+openssl req -new -newkey rsa:2048 -keyout /var/lib/shim-signed/mok/vmware.priv -outform DER -out /var/lib/shim-signed/mok/vmware.der -nodes -x509 -days 36500 -subj "/CN=VMware Module Signing Key"
+mokutil --import /var/lib/shim-signed/mok/vmware.der
 
 echo "Reboot your computer"

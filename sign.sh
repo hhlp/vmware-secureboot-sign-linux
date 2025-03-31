@@ -6,15 +6,16 @@ fi
 
 /usr/src/kernels/$(uname -r)/scripts/sign-file \
       sha256 \
-      MOK.priv \
-      MOK.der \
+      /var/lib/shim-signed/mok/vmware.priv \
+      /var/lib/shim-signed/mok/vmware.der \
       /lib/modules/$(uname -r)/misc/vmmon.ko
 echo "Signed vmmon"
 /usr/src/kernels/$(uname -r)/scripts/sign-file \
       sha256 \
-      MOK.priv \
-      MOK.der \
+      /var/lib/shim-signed/mok/vmware.priv \
+      /var/lib/shim-signed/mok/vmware.der \
       /lib/modules/$(uname -r)/misc/vmnet.ko
 echo "Signed vmnet"
 
 modprobe vmmon
+modprobe vmnet
