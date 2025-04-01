@@ -4,17 +4,23 @@ This is a script to sign the vmware modules (vmmon.ko and vmnet.ko) for secure b
 
 # Explanation
 
-gen-key.sh: This will generate a keys for signing the vmware modules (vmmon.ko and vmnet.ko).
-sign.sh: This will sign the vmware modules (vmmon.ko and vmnet.ko) and load into kernel.
+* gen-key.sh: This will generate a keys for signing the vmware modules (vmmon.ko and vmnet.ko).
+* * sign.sh: This will sign the vmware modules (vmmon.ko and vmnet.ko) and load into kernel.
 
 NOTE: May not work on other distros.
 
 # How to run
 
-First run `gen-key.sh` then reboot to approve the key into your system
+1. Run only Once:
+* First run `gen-key.sh` then reboot to approve the key into your system
 
-After rebooting, run `sign.sh`
+2. After rebooting or After New Kernel Install:
+* run `sign.sh`
 
 # Note
 
-for the current Kernel
+Only works for the Current Kernel
+
+### To do
+
+https://github.com/hhlp/vmware-secureboot-sign-linux/issues/1
