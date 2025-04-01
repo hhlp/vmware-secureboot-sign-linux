@@ -14,7 +14,7 @@ NOTE: May not work on other distros.
 1. Run only Once:
 * First run `gen-key.sh` then reboot to approve the key into your system
 
-2. After rebooting or After New Kernel Install:
+2. After rebooting or After New Kernel Install an Login into the new Kernel:
 * run `sign.sh`
 
 # Note
