@@ -1,26 +1,29 @@
 # VMware Secure Boot Sign for Linux
 
-This is a script to sign the vmware modules (vmmon.ko and vmnet.ko) for secure boot on Linux.
+This is a script to sign the VMware/VirtalBox modules for secure boot on Linux.
+    - vmmon.ko and vmnet.ko for VMWare.
+    - vboxdrv.ko for VirtualBox.
 
 # Explanation
 
-* gen-key.sh: This will generate a keys for signing the vmware modules (vmmon.ko and vmnet.ko).
-* sign.sh: This will sign the vmware modules (vmmon.ko and vmnet.ko) and load into kernel.
-
 NOTE: May not work on other distros.
 
-# How to run
+# How to Install
 
-1. Run only Once:
-* First run `gen-key.sh` then reboot to approve the key into your system
+1. Run Install:
+  a. Run `install -b` for VirtualBox
+  b. Run `install -w` for VMware
 
-2. After rebooting or After New Kernel Install an Login into the new Kernel:
-* run `sign.sh`
+and follow the steps provides.
 
-# Note
+2. Run one-time-setup, only Once:
+  a. Run `one-time-setup -b` for VirtualBox
+  b. Run `one-time-setup -w` for VMware
 
-Only works for the Current Login Kernel
+and follow the steps provides
 
-### To do
+# How to Uninstall
 
--> https://github.com/hhlp/vmware-secureboot-sign-linux/issues/1
+1. Run Uninstall:
+  a. Run `uninstall -b` for VirtualBox
+  b. Run `uninstall -w` for VMware

@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Sign a kernel module with a Machine Owner Key (MOK) for Secure Boot
+# Usage: sign-module module [module...]
+# module: the path to the module to sign
+# The script will not prompt for the MOK passphrase and sign the module with it
+# because this is not necesary, only the script one-time-setup need it.
+
+if [[ -z "$1" ]]; then
+    echo "Usage: $0 module [module...]"
+    exit 1
+fi
+
+mydir=$(dirname $0)
+
+PROMPT="${PROMPT:-Enter Machine Owner Key (MOK) passphrase: }"
+KERNELVER=${KERNELVER:-$(uname -r)}
+
+read_passphrase_vbox() {
+
+    # We write to /dev/tty to get around DKMS' redirection to /dev/null if it's being run with -q (e.g. during rpm installs)
+
+    export KBUILD_SIGN_PIN
+    echo > /dev/tty
+    openssl rsa -check -noout -passin env:KBUILD_SIGN_PIN -in $mydir/vbox.priv > /dev/null 2>&1
+
+}
+
+read_passphrase_vmware() {
+
+    # We write to /dev/tty to get around DKMS' redirection to /dev/null if it's being run with -q (e.g. during rpm installs)
+
+    export KBUILD_SIGN_PIN
+    echo > /dev/tty
+    openssl rsa -check -noout -passin env:KBUILD_SIGN_PIN -in $mydir/vmware.priv > /dev/null 2>&1
+}
+
+
+do_sign_vbox() {
+
+    /lib/modules/$KERNELVER/build/scripts/sign-file sha256 $mydir/vbox.priv $mydir/vbox.der "$1"
+
+}
+
+do_sign_vmware() {
+
+    /lib/modules/$KERNELVER/build/scripts/sign-file sha256 $mydir/vmware.priv $mydir/vmware.der "$1"
+
+}
+
+for module in $@; do
+
+    echo "Signing module: $module"
+    module_basename=${module:0:-3}
+    module_suffix=${module: -3}
+
+    if [[ "$module_basename" == "vboxdrv" ]]; then
+        KBUILD_SIGN_PIN="vbox"
+        read_passphrase_vbox
+        do_sign_vbox $module
+    else
+        if [[ "$module_basename" == "vmmon" ]]; then
+            KBUILD_SIGN_PIN="vmware"
+            read_passphrase_vmware
+            do_sign_vmware $module
+        else
+            if [[ "$module_basename" == "vmnet" ]]; then
+                KBUILD_SIGN_PIN="vmware"
+                read_passphrase_vmware
+    		do_sign_vmware $module
+            fi
+        fi
+    fi
+
+done

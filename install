@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Install required packages
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root. Exiting."
+   exit 1
+fi
+
+DIRECTORY="/root/module-signing/mok"
+
+if [ -d "$DIRECTORY" ]; then
+   echo "$DIRECTORY does exit. run uninstall if you would like to uninstall."
+   exit 1 
+fi
+
+show_help() {
+    echo "Usage: $0 [-v] [-b] [-h]"
+    echo "Options:"
+    echo "  -v    Install VMware"
+    echo "  -b    Install VirtualBox"
+    echo "  -h    Show this help message"
+}
+
+install_virtualbox() {
+    echo "Installing VirtualBox..."
+    common
+    echo "VirtualBox installation completed."
+}
+
+install_vmware() {
+    echo "Installing VMware..."
+    common
+    echo "VMware installation completed."
+}
+
+common() {
+    echo "Installing common dependencies..."
+
+    chmod u+x one-time-setup sign-module dkms-sign-module
+
+    # Install required scripts, files and directories
+
+    cp one-time-setup /root/module-signing/
+    cp sign-module /root/module-signing/
+    cp dkms-sign-module /root/module-signing/
+    cp vbox.conf /etc/dkms/vbox.conf
+    cp vmware.conf /etc/dkms/vmware.conf
+
+    dnf install mokutil dkms
+
+    mkdir -p /var/lib/shim-signed/mok
+
+    echo "Common dependencies installed."
+
+    echo "Installation complete. Please run one-time-setup to complete the setup"
+
+}
+
+while getopts ":vbh" opt; do
+    case ${opt} in
+        v ) install_vmware ;;
+        b ) install_virtualbox ;;
+        h ) show_help ;;
+        \? ) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
+    esac
+done
+
+if [ $OPTIND -eq 1 ]; then
+    echo "No options were passed. Use -h for help."
+fi

@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# Uninstall the module-signing tool and dkms configuration
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root. Exiting."
+   exit 1
+fi
+
+DIRECTORY="/root/module-signing"
+DIRECTORY_MOK="/var/lib/shim-signed/mok"
+
+if [ ! -d "$DIRECTORY" ]; then
+  echo "$DIRECTORY does not exist. Nothing to do."
+fi
+
+show_help() {
+    echo "Usage: $0 [-v] [-b] [-h]"
+    echo "Options:"
+    echo "  -v    Install VMware"
+    echo "  -b    Install VirtualBox"
+    echo "  -h    Show this help message"
+}
+
+un_virtualbox() {
+    echo "Uninstall VirtualBox... and keys"
+    common()
+    del_sign_key_vbox()
+    echo "VirtualBox Uninstall completed."
+}
+
+un_vmware() {
+    echo "Uninstalling VMware... and keys"
+    common()
+    del_sign_key_vmware()
+    echo "VMware Uninstall completed."
+}
+
+common(){
+  rm -rf /root/module-signing
+  rm /etc/dkms/vmware.conf
+  rm /etc/dkms/vbox.conf
+}
+
+del_sign_key_vbox() {
+    mokutil --delete $DIRECTORY_MOK/vbox.der
+    message()
+}
+
+del_sin_key_vmware() {
+    mokutil --delete $DIRECTORY_MOK/vmware.der
+    message()
+}
+
+message() {
+    echo "reboot"
+    echo "During reboot, the MOK Manager (MOKList) screen will appear. Follow these steps:"
+    echo "Select Change MOK."
+    echo "Choose Delete Key."
+    echo "Select the key you want to delete and confirm."
+    echo "Enter the password if prompted (same as used when enrolling the key)."
+    echo "Confirm the deletion and reboot the system."
+    echo "Once the system boots up, you can verify that the key has been removed using:"
+    echo "mokutil --list-enrolled"
+}
+
+display_help() {
+    echo "Usage: $0"
+    echo "Select an option from the menu to uninstall VirtualBox or VMware."
+    echo "1 - Uninstall VirtualBox"
+    echo "2 - UnInstall VMware"
+    echo "3 - Help"
+    echo "4 - Exit"
+}
+
+while getopts ":vbh" opt; do
+    case ${opt} in
+        v ) un_vmware ;;
+        b ) un_virtualbox ;;
+        h ) show_help ;;
+        \? ) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
+    esac
+done
+
+if [ $OPTIND -eq 1 ]; then
+    echo "No options were passed. Use -h for help."
+fi

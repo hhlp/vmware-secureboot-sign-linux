@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# This script is intended to be run once, to set up the Machine Owner Key (MOK) for signing modules.
+# It will generate a new key, import it into the secure keystore, and prompt you to reboot.
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root. Exiting."
+   exit 1
+fi
+
+mydir="/var/lib/shim-signed/mok"
+
+
+message_1() {
+   
+   echo
+   echo "I am about to generate the Machine Owner Key (MOK)."
+   echo "The passphrase you enter for this key will be required every time you want to sign a module."
+   read -p "Please press Return to go on..."
+
+}
+
+message_2() {
+
+   echo
+   echo "Now I will import the generated key into the secure keystore."
+   echo "The passphrase you will enter is only required once, during the following reboot."
+   read -p "Please press Return to go on..."
+
+}   
+
+message_3() {
+
+   echo
+   echo "Please reboot your computer now to complete the enrollment of your new MOK."
+   echo "This is going to look somewhat similar to https://sourceware.org/systemtap/wiki/SecureBoot"
+   echo "and cat /usr/share/doc/akmods/README.secureboot."
+
+   echo
+   echo "- Rebooting the system is needed for MOK to enroll the new public key."
+   echo "- On next boot MOK Management is launched and you have to choose"
+   echo "- Enroll MOK".
+   echo "- Choose Continue' to enroll the key or View key 0 to show the keys already enrolled."
+   echo "- Confirm enrollment by selecting Yes."
+   echo "- You will be invited to enter the password generated above."
+   echo " (WARNING: keyboard is mapped to QWERTY!)"
+   echo "- The new key is enrolled, and system ask you to reboot."
+
+}   
+
+sign_virtualbox() {
+
+   message_1
+
+   openssl req -nodes -new -x509 -newkey rsa:2048 -outform DER -addext "extendedKeyUsage=codeSigning" -keyout $mydir/vbox.priv -out $mydir/vbox.der -subj "/CN=VirtualBox Module Signing Key" || exit 1
+
+   message_2
+
+   mokutil --set-verbosity true #optional
+   mokutil --password #enter password when prompted
+   mokutil --import $mydir/vbox.der || exit 1
+
+   message_3
+
+}
+
+sign_vmware() {
+
+   message_1
+
+   openssl req -new -newkey rsa:2048 -keyout $mydir/vmware.priv -outform DER -out $mydir/vmware.der -nodes -x509 -days 36500 -subj "/CN=VMware Module Signing Key" || exit 1
+
+   message_2
+
+   mokutil --set-verbosity true #optional
+   mokutil --password #enter password when prompted
+   mokutil --import $mydir/vmware.der || exit 1
+
+   message_3
+
+}   
+
+while getopts ":vbh" opt; do
+    case ${opt} in
+        v ) sign__vmware ;;
+        b ) sign_virtualbox ;;
+        h ) show_help ;;
+        \? ) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
+    esac
+done
+
+if [ $OPTIND -eq 1 ]; then
+    echo "No options were passed. Use -h for help."
+fi
